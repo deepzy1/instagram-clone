@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+
+{% block title %}New Conversation{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background-color: #fafafa;
+    }
+    .conversation-container {
+        max-width: 935px;
+        margin: 0 auto;
+        background-color: #fff;
+        border: 1px solid #dbdbdb;
+        border-radius: 3px;
+    }
+    .conversation-header {
+        border-bottom: 1px solid #dbdbdb;
+        padding: 16px;
+    }
+    .message-container {
+        height: calc(100vh - 200px);
+        overflow-y: auto;
+        padding: 16px;
+    }
+    .message-form {
+        border-top: 1px solid #dbdbdb;
+        padding: 16px;
+    }
+    .message-input {
+        border: 1px solid #dbdbdb;
+        border-radius: 22px;
+        padding: 8px 12px;
+    }
+    .send-button {
+        background-color: #0095f6;
+        border: none;
+        color: #fff;
+        font-weight: bold;
+        border-radius: 22px;
+        padding: 8px 16px;
+    }
+    .send-button:hover {
+        background-color: #0081d6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row conversation-container">
+        <div class="col-md-4 p-0 border-right">
+            <div class="conversation-header">
+                <h5 class="mb-0">{{ request.user.username }}</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                <a href="{% url 'inbox' %}" class="list-group-item list-group-item-action">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Inbox
+                </a>
+                <div class="list-group-item">
+                    <img src="{{ recipient.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ recipient.username }}" class="rounded-circle mr-2" style="width: 40px; height: 40px;">
+                    {{ recipient.username }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 p-0">
+            <div class="conversation-header">
+                <h5 class="mb-0">New Conversation with {{ recipient.username }}</h5>
+            </div>
+            <div class="message-container">
+                <p class="text-muted text-center mt-4">Send a message to start the conversation.</p>
+            </div>
+            <form method="post" class="message-form">
+                {% csrf_token %}
+                <div class="input-group">
+                    {% render_field form.content class="form-control message-input" placeholder="Type your message..." %}
+                    <div class="input-group-append">
+                        <button type="submit" class="btn send-button">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://kit.fontawesome.com/your-fontawesome-kit.js" crossorigin="anonymous"></script>
+<script>
+$(document).ready(function() {
+    $("form").on("submit", function(e) {
+        e.preventDefault();
+        $.post("{% url 'new_conversation' recipient.username %}", $(this).serialize(), function(response) {
+            if (response.success) {
+                window.location.href = response.redirect_url;
+            } else {
+                alert("Error starting conversation. Please try again.");
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

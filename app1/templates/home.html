@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Clone - Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #fafafa;
+        }
+        .navbar {
+            background-color: #fff;
+            border-bottom: 1px solid #dbdbdb;
+        }
+        .post-card {
+            background-color: #fff;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            margin-bottom: 60px;
+        }
+        .post-header {
+            padding: 16px;
+            border-bottom: 1px solid #efefef;
+        }
+        .post-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .post-image {
+            width: 100%;
+            max-height: 600px;
+            object-fit: cover;
+        }
+        .post-actions {
+            padding: 16px;
+        }
+        .post-likes {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .post-caption {
+            margin-bottom: 8px;
+        }
+        .post-comments {
+            color: #8e8e8e;
+        }
+        .comment-form {
+            border-top: 1px solid #efefef;
+            padding: 16px;
+        }
+        .comment-input {
+            border: none;
+            outline: none;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">Instagram Clone</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_post' %}">Create Post</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'user_posts' %}">My Posts</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                        
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                {% for post in posts %}
+                    <div class="post-card">
+                        <div class="post-header d-flex align-items-center">
+                            <img src="{{ post.user.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ post.user.username }}" class="post-avatar">
+                            <span class="font-weight-bold">{{ post.user.username }}</span>
+                        </div>
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" alt="Post image" class="post-image">
+                        {% elif post.video %}
+                            <video src="{{ post.video.url }}" controls class="post-image"></video>
+                        {% endif %}
+                        <div class="post-actions">
+                            <div class="d-flex justify-content-between mb-2">
+                                <div>
+                                    <button class="btn btn-link p-0 mr-3 like-button" data-post-id="{{ post.id }}">
+                                        <i class="far fa-heart"></i>
+                                    </button>
+                                    <button class="btn btn-link p-0 mr-3">
+                                        <i class="far fa-comment"></i>
+                                    </button>
+                                    <button class="btn btn-link p-0">
+                                        <i class="far fa-paper-plane"></i>
+                                    </button>
+
+                                                
+                                </div>
+                                <button class="btn btn-link p-0">
+                                    <i class="far fa-bookmark"></i>
+                                </button>
+                            </div>
+                            <div class="post-likes">
+                                <span class="likes-count">{{ post.likes.count }}</span> likes
+                            </div>
+                            <div class="post-caption">
+                                <span class="font-weight-bold">{{ post.user.username }}</span> {{ post.caption }}
+                            </div>
+                            <div class="post-comments">
+                                <a href="{% url 'post_detail' post.id %}">View all comments</a>
+                            </div>
+                            <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                        </div>
+                        <div class="comment-form">
+                            <form action="{% url 'post_detail' post.id %}" method="post">
+                                {% csrf_token %}
+                                <input type="text" name="text" placeholder="Add a comment..." class="comment-input">
+                            </form>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center">
+                        <p>No posts yet. Be the first to share a moment!</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.like-button').click(function() {
+                var postId = $(this).data('post-id');
+                var likeButton = $(this);
+                var likesCountElement = likeButton.closest('.post-actions').find('.likes-count');
+
+                $.ajax({
+                    url: '/post/' + postId + '/like/',
+                    type: 'POST',
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        likesCountElement.text(response.likes_count);
+                        likeButton.find('i').toggleClass('far fas');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

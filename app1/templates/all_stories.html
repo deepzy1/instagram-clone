@@ -1,0 +1,28 @@
+<!-- app1/templates/all_stories.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}All Stories{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>All Stories</h2>
+    <div class="row">
+        {% for story in stories %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ story.title }}</h5>
+                        <p class="card-text">{{ story.content|truncatechars:100 }}</p>
+                        <a href="{% url 'story_detail' story.pk %}" class="btn btn-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p>No stories found.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

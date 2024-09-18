@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Story{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <h2>Create Story</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Create Story</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

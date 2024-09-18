@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Clone</title>
+    
+    <!-- Bootstrap and Font Awesome -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+        /* General Body Styling */
+        body {
+            background-color: #fafafa;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background-color: #fff;
+            border-bottom: 1px solid #dbdbdb;
+        }
+
+        /* Rounded avatar styling */
+        .rounded-circle {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+        }
+
+        /* Suggested Users Styling */
+        .list-group-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .list-group-item img {
+            margin-right: 10px;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 25px;
+        }
+
+        .search-input {
+            width: 60%;
+            padding: 15px;
+            font-size: 18px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-select {
+            width: 32%;
+            padding: 15px;
+            font-size: 18px;
+            border: 1px solid #ddd;
+            border-left: none;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-button {
+            padding: 15px 25px;
+            font-size: 18px;
+            background-color: #ffcc00;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-button:hover {
+            background-color: #ff9900;
+        }
+
+        /* Like button styling */
+        .like-button {
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .like-button i {
+            font-size: 24px;
+        }
+
+        .share-button {
+            cursor: pointer;
+            border: none;
+            background: none;
+        }
+
+        .share-button i {
+            font-size: 24px;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">Instagram Clone</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'home' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'explore_users' %}">Explore</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_post' %}">Create Post</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'user_profile' user.username %}">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Sign Up</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Main block for content -->
+        {% block content %}
+        <div class="row">
+            <div class="col-md-8">
+                {% for post in posts %}
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <a href="{% url 'user_profile' post.user.username %}">
+                                <img src="{{ post.user.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ post.user.username }}" class="rounded-circle">
+                                <span class="ml-2">{{ post.user.username }}</span>
+                            </a>
+                        </div>
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" alt="Post image" class="card-img-top">
+                        {% elif post.video %}
+                            <video src="{{ post.video.url }}" controls class="card-img-top"></video>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <button class="btn btn-link p-0 mr-3 like-button" data-post-id="{{ post.id }}">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                                <a href="{% url 'post_detail' post.id %}" class="btn btn-link p-0 mr-3">
+                                    <i class="far fa-comment"></i>
+                                </a>
+                                <button class="btn btn-link p-0 share-button" data-post-id="{{ post.id }}">
+                                    <i class="far fa-paper-plane"></i>
+                                </button>
+                            </div>
+                            <p class="card-text"><strong>{{ post.likes.count }}</strong> likes</p>
+                            <p class="card-text"><strong>{{ post.user.username }}</strong> {{ post.caption }}</p>
+                            <p class="card-text"><small class="text-muted">{{ post.created_at|timesince }} ago</small></p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No posts yet. Follow some users to see their posts!</p>
+                {% endfor %}
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        Suggested Users
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% for user in suggested_users %}
+                            <li class="list-group-item">
+                                <a href="{% url 'user_profile' user.username %}">
+                                    <img src="{{ user.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ user.username }}" class="rounded-circle">
+                                    <span class="ml-2">{{ user.username }}</span>
+                                </a>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item">No suggestions available</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endblock %}
+    </div>
+
+    <!-- JavaScript for dynamic functionality -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Extra JS block for custom scripts -->
+    {% block extra_js %}
+    <script>
+    $(document).ready(function() {
+        $('.like-button').click(function() {
+            var postId = $(this).data('post-id');
+            var likeButton = $(this);
+            var likesCountElement = likeButton.closest('.card-body').find('p:contains("likes")');
+
+            $.ajax({
+                url: '/post/' + postId + '/like/',
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    likesCountElement.html('<strong>' + response.likes_count + '</strong> likes');
+                }
+            });
+        });
+    });
+    </script>
+    {% endblock %}
+</body>
+</html>

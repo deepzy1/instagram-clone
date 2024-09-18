@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Inbox</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="list-group">
+                {% for conversation in conversations %}
+                    <a href="{% url 'conversation' conversation.id %}" class="list-group-item list-group-item-action">
+                        {% for participant in conversation.participants.all %}
+                            {% if participant != request.user %}
+                                <img src="{{ participant.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ participant.username }}" class="rounded-circle mr-2" style="width: 40px; height: 40px;">
+                                {{ participant.username }}
+                            {% endif %}
+                        {% endfor %}
+                        <small class="text-muted float-right">{{ conversation.updated_at|timesince }} ago</small>
+                    </a>
+                {% empty %}
+                    <p class="text-muted">No conversations yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Select a conversation to view messages</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

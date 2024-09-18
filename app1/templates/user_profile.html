@@ -1,0 +1,203 @@
+
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4 text-center">
+            {% if profile_user.profile_picture %}
+                <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+            {% else %}
+                <img src="https://via.placeholder.com/150" alt="Default profile picture" class="img-fluid rounded-circle">
+            {% endif %}
+        </div>
+        <div class="col-md-8">
+            <h2>{{ profile_user.username }}</h2>
+            <p>{{ profile_user.bio }}</p>
+            <p><strong>Location:</strong> {{ profile_user.location }}</p>
+            <p><strong>Website:</strong> <a href="{{ profile_user.website }}">{{ profile_user.website }}</a></p>
+            <p><strong>Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p>
+            <p><strong>Posts:</strong> {{ profile_user.posts.count }}</p>
+            <p><strong>Followers:</strong> <span id="followers-count">{{ profile_user.followers.count }}</span></p>
+            <p><strong>Following:</strong> {{ profile_user.following.count }}</p>
+            {% if user.is_authenticated and user != profile_user %}
+                <div class="d-flex">
+                    <button id="follow-button" class="btn btn-primary mr-2" data-username="{{ profile_user.username }}">
+                        {% if is_following %}
+                            Unfollow
+                        {% else %}
+                            Follow
+                        {% endif %}
+                    </button>
+                    <a href="{% url 'new_conversation' profile_user.username %}" class="btn btn-outline-primary">Start Conversation</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+        {% for post in posts %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <a href="{% url 'post_detail' post.id %}">
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" alt="{{ post.caption }}" class="card-img-top">
+                        {% elif post.video %}
+                            <video src="{{ post.video.url }}" class="card-img-top" controls></video>
+                        {% endif %}
+                    </a>
+                    <div class="card-body">
+                        <p class="card-text">{{ post.caption|truncatechars:50 }}</p>
+                        
+                        <!-- Buttons for editing and deleting the post, only visible to the post owner -->
+                        {% if post.user == request.user %}
+                            <div class="mt-2">
+                                <a href="{% url 'edit_post' post.id %}" class="btn btn-sm btn-primary">Edit</a>
+                                <form action="{% url 'delete_post' post.id %}" method="POST" style="display:inline-block;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this post?')">Delete</button>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p>No posts yet.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#follow-button').click(function() {
+        var username = $(this).data('username');
+        $.ajax({
+            url: '/user/' + username + '/follow/',
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.is_following) {
+                    $('#follow-button').text('Unfollow');
+                } else {
+                    $('#follow-button').text('Follow');
+                }
+                $('#followers-count').text(response.followers_count);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+
+{% comment %} {% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} - Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 text-center">
+        {% if profile_user.profile_picture %}
+            <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+        {% else %}
+            <img src="https://via.placeholder.com/150" alt="Default profile picture" class="img-fluid rounded-circle">
+        {% endif %}
+    </div>
+    <div class="col-md-8">
+        <h2>{{ profile_user.username }}</h2>
+        <p>{{ profile_user.bio }}</p>
+        <p><strong>Location:</strong> {{ profile_user.location }}</p>
+        <p><strong>Website:</strong> <a href="{{ profile_user.website }}">{{ profile_user.website }}</a></p>
+        <p><strong>Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p>
+        <p><strong>Posts:</strong> {{ profile_user.posts.count }}</p>
+        <p><strong>Followers:</strong> <span id="followers-count">{{ profile_user.followers.count }}</span></p>
+        <p><strong>Following:</strong> {{ profile_user.following.count }}</p>
+        {% if user.is_authenticated and user != profile_user %}
+            <button id="follow-button" class="btn btn-primary" data-username="{{ profile_user.username }}">
+                {% if is_following %}
+                    Unfollow
+                {% else %}
+                    Follow
+                {% endif %}
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    {% for post in posts %}
+        <div class="col-md-4 mb-4">
+            <a href="{% url 'post_detail' post.id %}">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="{{ post.caption }}" class="img-fluid">
+                {% elif post.video %}
+                    <video src="{{ post.video.url }}" class="img-fluid"></video>
+                {% endif %}
+            </a>
+            
+            <!-- Buttons for editing and deleting the post, only visible to the post owner -->
+            {% if post.user == request.user %}
+                <div class="mt-2">
+                    <a href="{% url 'edit_post' post.id %}" class="btn btn-sm btn-primary">Edit</a>
+                    <form action="{% url 'delete_post' post.id %}" method="POST" style="display:inline-block;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p>No posts yet.</p>
+        </div>
+    {% endfor %}
+</div>
+
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#follow-button').click(function() {
+        var username = $(this).data('username');
+        $.ajax({
+            url: '/user/' + username + '/follow/',
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.is_following) {
+                    $('#follow-button').text('Unfollow');
+                } else {
+                    $('#follow-button').text('Follow');
+                }
+                $('#followers-count').text(response.followers_count);
+            }
+        });
+    });
+});
+</script>
+{% endblock %} {% endcomment %}
