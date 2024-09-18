@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load custom_filters %}  <!-- Load the custom filters -->
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<h2>Search Results</h2>
+<form method="get" action="{% url 'search' %}" class="mb-4">
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<div class="row">
+    {% for result in results %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    {% if result|is_instance:"CustomUser" %}
+                        <h5 class="card-title">{{ result.username }}</h5>
+                        <p class="card-text">{{ result.bio|truncatechars:100 }}</p>
+                        <a href="{% url 'user_profile' result.username %}" class="btn btn-primary">View Profile</a>
+                    {% elif result|is_instance:"Post" %}
+                        <h5 class="card-title">Post by {{ result.user.username }}</h5>
+                        <p class="card-text">{{ result.caption|truncatechars:100 }}</p>
+                        <a href="{% url 'post_detail' result.id %}" class="btn btn-primary">View Post</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p>No results found.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} - Profile</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #fafafa;
+        }
+        .profile-header {
+            background-color: #fff;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            border-top: 1px solid #dbdbdb;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .profile-stat-count {
+            font-weight: bold;
+        }
+        .edit-profile-form {
+            background-color: #fff;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">Instagram Clone</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'create_post' %}">Create Post</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="profile-header">
+            <div class="row">
+                <div class="col-md-4 text-center">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                        <img src="https://via.placeholder.com/150" alt="Default profile picture" class="img-fluid rounded-circle">
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h2>{{ user.username }}</h2>
+                    <p>{{ user.bio }}</p>
+                    <p><strong>Location:</strong> {{ user.location }}</p>
+                    <p><strong>Website:</strong> <a href="{{ user.website }}">{{ user.website }}</a></p>
+                    <p><strong>Joined:</strong> {{ user.date_joined|date:"F d, Y" }}</p>
+                </div>
+            </div>
+            <div class="profile-stats">
+                <div class="col-md-8">
+                    {% comment %} <h2>{{ profile_user.username }}</h2>
+                    <p>{{ profile_user.bio }}</p>
+                    <p><strong>Location:</strong> {{ profile_user.location }}</p>
+                    <p><strong>Website:</strong> <a href="{{ profile_user.website }}">{{ profile_user.website }}</a></p>
+                    <p><strong>Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p> {% endcomment %}
+                    <p><strong>Posts:</strong> {{ profile_user.posts.count }}</p>
+                    <p><strong>Followers:</strong> <span id="followers-count">{{ profile_user.followers.count }}</span></p>
+                    <p><strong>Following:</strong> {{ profile_user.following.count }}</p>
+                    {% if user.is_authenticated and user != profile_user %}
+                        <button id="follow-button" class="btn btn-primary" data-username="{{ profile_user.username }}">
+                            {% if is_following %}
+                                Unfollow
+                            {% else %}
+                                Follow
+                            {% endif %}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="edit-profile-form">
+            <h3>Edit Profile</h3>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% for error in field.errors %}
+                            <p class="text-danger">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Update Profile</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

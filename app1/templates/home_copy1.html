@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* General Body Styling */
+    body {
+        background-color: #fafafa;
+    }
+
+    /* Navbar Styling */
+    .navbar {
+        background-color: #fff;
+        border-bottom: 1px solid #dbdbdb;
+    }
+
+    /* Rounded avatar styling */
+    .rounded-circle {
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+    }
+
+    /* Suggested Users Styling */
+    .list-group-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .list-group-item img {
+        margin-right: 10px;
+    }
+
+    .search-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 20px auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 25px;
+    }
+
+    .search-input {
+        width: 60%;
+        padding: 15px;
+        font-size: 18px;
+        border: 1px solid #ddd;
+        border-radius: 5px 0 0 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-select {
+        width: 32%;
+        padding: 15px;
+        font-size: 18px;
+        border: 1px solid #ddd;
+        border-left: none;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-button {
+        padding: 15px 25px;
+        font-size: 18px;
+        background-color: #ffcc00;
+        border: none;
+        border-radius: 0 5px 5px 0;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-button:hover {
+        background-color: #ff9900;
+    }
+
+    /* Like button styling */
+    .like-button {
+        cursor: pointer;
+        border: none;
+        background: none;
+    }
+
+    .like-button i {
+        font-size: 24px;
+    }
+
+    .share-button {
+        cursor: pointer;
+        border: none;
+        background: none;
+    }
+
+    .share-button i {
+        font-size: 24px;
+    }
+
+    /* Stories styling */
+    .stories-container {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 10px 0;
+    }
+
+    .story-item {
+        display: inline-block;
+        margin-right: 15px;
+        text-align: center;
+    }
+
+    .story-avatar {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #e1306c;
+        padding: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% comment %} <div class="search-container">
+    <input type="text" class="search-input" placeholder="Search...">
+    <select class="search-select">
+        <option value="users">Users</option>
+        <option value="posts">Posts</option>
+    </select>
+    <button class="search-button">
+        <i class="fas fa-search"></i>
+    </button>
+</div> {% endcomment %}
+
+{% comment %} <div class="row mb-4">
+    <div class="col-12">
+        <h3>Stories</h3>
+        <div class="stories-container">
+            {% for story in stories %}
+                <div class="story-item">
+                    <a href="{% url 'story_detail' story.pk %}">
+                        <img src="{{ story.user.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ story.user.username }}" class="rounded-circle story-avatar">
+                        <p class="mt-1">{{ story.user.username }}</p>
+                    </a>
+                </div>
+            {% empty %}
+                <p>No stories available.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div> {% endcomment %}
+
+<div class="container">
+    <h2>Recent Stories</h2>
+    <div class="row">
+        {% for story in stories %}
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ story.title }}</h5>
+                        <p class="card-text">{{ story.content|truncatechars:100 }}</p>
+                        <a href="{% url 'story_detail' story.pk %}" class="btn btn-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <p>No stories found.</p>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'all_stories' %}" class="btn btn-secondary">View All Stories</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        {% for post in posts %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <a href="{% url 'user_profile' post.user.username %}">
+                        <img src="{{ post.user.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ post.user.username }}" class="rounded-circle">
+                        <span class="ml-2">{{ post.user.username }}</span>
+                    </a>
+                </div>
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" alt="Post image" class="card-img-top">
+                {% elif post.video %}
+                    <video src="{{ post.video.url }}" controls class="card-img-top"></video>
+                {% endif %}
+                <div class="card-body">
+                    <div class="mb-2">
+                        <button class="btn btn-link p-0 mr-3 like-button" data-post-id="{{ post.id }}">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        <a href="{% url 'post_detail' post.id %}" class="btn btn-link p-0 mr-3">
+                            <i class="far fa-comment"></i>
+                        </a>
+                        <button class="btn btn-link p-0 share-button" data-post-id="{{ post.id }}">
+                            <i class="far fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <p class="card-text"><strong>{{ post.likes.count }}</strong> likes</p>
+                    <p class="card-text"><strong>{{ post.user.username }}</strong> {{ post.caption }}</p>
+                    <p class="card-text">
+                        {% for tag in post.tags.all %}
+                            <span class="badge badge-secondary">#{{ tag.name }}</span>
+                        {% endfor %}
+                    </p>
+                    <p class="card-text"><small class="text-muted">{{ post.created_at|timesince }} ago</small></p>
+                </div>
+            </div>
+        {% empty %}
+            <p>No posts yet. Follow some users to see their posts!</p>
+        {% endfor %}
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                Suggested Users
+            </div>
+            <ul class="list-group list-group-flush">
+                {% for user in suggested_users %}
+                    <li class="list-group-item">
+                        <a href="{% url 'user_profile' user.username %}">
+                            <img src="{{ user.profile_picture.url|default:'/static/default_avatar.png' }}" alt="{{ user.username }}" class="rounded-circle">
+                            <span class="ml-2">{{ user.username }}</span>
+                        </a>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No suggestions available</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('.like-button').click(function() {
+        var postId = $(this).data('post-id');
+        var likeButton = $(this);
+        var likesCountElement = likeButton.closest('.card-body').find('p:contains("likes")');
+
+        $.ajax({
+            url: '/post/' + postId + '/like/',
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                likesCountElement.html('<strong>' + response.likes_count + '</strong> likes');
+                likeButton.find('i').toggleClass('far fas');
+            }
+        });
+    });
+
+    $('.share-button').click(function() {
+        var postId = $(this).data('post-id');
+        
+        $.ajax({
+            url: '/post/' + postId + '/share/',
+            type: 'POST',
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                alert('Post shared successfully!');
+            }
+        });
+    });
+
+    $('.search-button').click(function() {
+        var query = $('.search-input').val();
+        var searchType = $('.search-select').val();
+        window.location.href = '/search/?query=' + encodeURIComponent(query) + '&type=' + searchType;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Users{% endblock %}
+
+{% block content %}
+<h2>Explore Users</h2>
+<div class="row">
+    {% for user in users %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ user.username }}</h5>
+                    <p class="card-text">{{ user.bio|truncatechars:100 }}</p>
+                    <p class="card-text"><small class="text-muted">Followers: {{ user.followers.count }}</small></p>
+                    <a href="{% url 'user_profile' user.username %}" class="btn btn-primary">View Profile</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <p>No users found.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
