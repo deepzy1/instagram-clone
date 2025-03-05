@@ -1,2 +1,2 @@
 # instagram-clone
-This repository contains instahram clone using django in python 
+This repository contains instagram clone using Django(Python,Sql lite for database)
